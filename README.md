@@ -21,7 +21,7 @@ This Python script can be used to decontaminate a HuggingFace dataset. The datas
 Usage
 To use the script, run:
 
-```python decontaminate.py --dataset <dataset> --column <column> --test_set <test_set> --n <n> --n_processes <n_processes>```
+```python hf_data_scrubber.py --dataset <dataset> --column <column> --test_set <test_set> --n <n> --n_processes <n_processes>```
 
 Where:
 
