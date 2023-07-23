@@ -4,6 +4,26 @@ from nltk.util import ngrams
 import jsonlines
 from tqdm import tqdm
 import re
+import os
+
+def normalize_text(text):
+    """Keep only numbers, letters and spaces. Lowercase the text."""
+    return re.sub(r'[^0-9a-zA-Z ]+', '', text).lower()
+
+class NGram:
+    """Keeps ngrams of a text and computes the hash using normalized text"""
+    def __init__(self, text):
+        self.text = text
+        self.normalized_text = normalize_text(text)
+
+    def __eq__(self, other):
+        return self.normalized_text == other.normalized_text
+    
+    def __str__(self):
+        return self.text
+
+    def __hash__(self):
+        return hash(self.normalized_text)
 
 def split_on_contamination(data_batch, test_ngrams, args):
     # Data batch comes as a dict with list values. Let's reorganize it as a list of dicts
@@ -12,7 +32,7 @@ def split_on_contamination(data_batch, test_ngrams, args):
     ngrams_batch = []
     for txt in data_batch[args.column]:
         obj_ngrams = ngrams(txt.split(), args.n)
-        obj_ngrams = [' '.join(ngram) for ngram in obj_ngrams]
+        obj_ngrams = [NGram(' '.join(ngram)) for ngram in obj_ngrams]
         ngrams_batch.append(set(obj_ngrams))
     
     decontaminated_batch = {k: [] for k in data_batch.keys()}
@@ -24,7 +44,12 @@ def split_on_contamination(data_batch, test_ngrams, args):
             print('Contaminating ngrams: ', ngrams_batch[i].intersection(test_ngrams))
             # Split the text on the ngrams in the intersection
             # First, create a regex to split on the ngrams
-            regex = '|'.join(re.escape(ngram) for ngram in ngrams_batch[i].intersection(test_ngrams))
+            intersection_strs = []
+            for doc_ngram in ngrams_batch[i]:
+                for test_ngram in test_ngrams:
+                    if doc_ngram == test_ngram:
+                        intersection_strs.append(str(doc_ngram))
+            regex = '|'.join(re.escape(str(ngram)) for ngram in intersection_strs)
             # Split the text
             split_text = re.split(regex, data_batch[args.column][i])
             # print('Split text: ', split_text)
@@ -41,7 +66,7 @@ def split_on_contamination(data_batch, test_ngrams, args):
     return decontaminated_batch  
 
 def main(args):
-    ds = load_dataset(args.dataset)
+    ds = load_dataset(args.dataset, cache_dir=args.cache_dir)
     # Load test_set
     with jsonlines.open(args.test_set) as reader:
         test_set = [obj for obj in reader]
@@ -51,11 +76,18 @@ def main(args):
     test_ngrams = []
     for obj in tqdm(test_set):
         obj_ngrams = ngrams(obj.split(), args.n)
-        obj_ngrams = [' '.join(ngram) for ngram in obj_ngrams]
+        obj_ngrams = [NGram(' '.join(ngram)) for ngram in obj_ngrams]
         test_ngrams.extend(list(obj_ngrams))
     test_ngrams = set(test_ngrams)
 
+    print('Decontaminating dataset')
     decontaminated_dataset = ds.map(lambda x: split_on_contamination(x, test_ngrams, args), batched=True, batch_size=1000, num_proc=args.n_processes)
+
+    print(decontaminated_dataset)
+
+    if args.output_dataset:
+        decontaminated_dataset.save_to_disk(os.path.join(args.cache_dir, args.output_dataset))
+        decontaminated_dataset.push_to_hub(args.output_dataset)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -64,6 +96,8 @@ if __name__ == '__main__':
     parser.add_argument('--test_set', type=str, default='data/test.jsonl')
     parser.add_argument('--n', type=int, default=13)
     parser.add_argument('--n_processes', type=int, default=8)
+    parser.add_argument('--output_dataset', type=str, default=None)
+    parser.add_argument('--cache_dir', type=str)
 
     args = parser.parse_args()
     main(args)
