@@ -140,6 +140,10 @@ def main(args):
     texts = get_texts('miniF2F/metamath/test/*.mm')
     add_texts_to_output(texts, args.output)
 
+    # Add OCW
+    texts = get_texts('custom_datasets/ocw/*.tex')
+    add_texts_to_output(texts, args.output)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=str, default='data/test.jsonl')
