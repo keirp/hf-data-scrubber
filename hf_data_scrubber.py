@@ -6,25 +6,6 @@ from tqdm import tqdm
 import re
 import os
 
-def normalize_text(text):
-    """Keep only numbers, letters and spaces. Lowercase the text."""
-    return re.sub(r'[^0-9a-zA-Z ]+', '', text).lower()
-
-class NGram:
-    """Keeps ngrams of a text and computes the hash using normalized text"""
-    def __init__(self, text):
-        self.text = text
-        self.normalized_text = normalize_text(text)
-
-    def __eq__(self, other):
-        return self.normalized_text == other.normalized_text
-    
-    def __str__(self):
-        return self.text
-
-    def __hash__(self):
-        return hash(self.normalized_text)
-
 def split_on_contamination(data_batch, test_ngrams, args):
     # Data batch comes as a dict with list values. Let's reorganize it as a list of dicts
     # data_batch = [{k: v[i] for k, v in data_batch.items()} for i in range(len(data_batch[args.column]))]
@@ -32,7 +13,7 @@ def split_on_contamination(data_batch, test_ngrams, args):
     ngrams_batch = []
     for txt in data_batch[args.column]:
         obj_ngrams = ngrams(txt.split(), args.n)
-        obj_ngrams = [NGram(' '.join(ngram)) for ngram in obj_ngrams]
+        obj_ngrams = [' '.join(ngram) for ngram in obj_ngrams]
         ngrams_batch.append(set(obj_ngrams))
     
     decontaminated_batch = {k: [] for k in data_batch.keys()}
@@ -44,12 +25,7 @@ def split_on_contamination(data_batch, test_ngrams, args):
             print('Contaminating ngrams: ', ngrams_batch[i].intersection(test_ngrams))
             # Split the text on the ngrams in the intersection
             # First, create a regex to split on the ngrams
-            intersection_strs = []
-            for doc_ngram in ngrams_batch[i]:
-                for test_ngram in test_ngrams:
-                    if doc_ngram == test_ngram:
-                        intersection_strs.append(str(doc_ngram))
-            regex = '|'.join(re.escape(str(ngram)) for ngram in intersection_strs)
+            regex = '|'.join(re.escape(ngram) for ngram in ngrams_batch[i].intersection(test_ngrams))
             # Split the text
             split_text = re.split(regex, data_batch[args.column][i])
             # print('Split text: ', split_text)
@@ -76,7 +52,7 @@ def main(args):
     test_ngrams = []
     for obj in tqdm(test_set):
         obj_ngrams = ngrams(obj.split(), args.n)
-        obj_ngrams = [NGram(' '.join(ngram)) for ngram in obj_ngrams]
+        obj_ngrams = [' '.join(ngram) for ngram in obj_ngrams]
         test_ngrams.extend(list(obj_ngrams))
     test_ngrams = set(test_ngrams)
 
