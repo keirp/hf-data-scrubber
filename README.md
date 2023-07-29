@@ -74,3 +74,8 @@ python decontaminate.py \
 --push_to_hub <name for huggingface hub> \
 --save_to_disk <path to save decontaminated dataset>
 ```
+
+## To-Do
+
+- [ ] **Add other common benchmark tasks:** It would probably be useful to add most of the common benchmark tasks to the test set code. Perhaps we can source these tasks from the [lm-evaluation-harness repo](https://github.com/EleutherAI/lm-evaluation-harness).
+- [ ] **Text normalization:** It might be useful to support text normalization, so that strings don't have to exactly match to be removed.
