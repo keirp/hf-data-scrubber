@@ -2,11 +2,21 @@ import argparse
 from datasets import load_dataset
 from nltk.util import ngrams
 import jsonlines
-from tqdm import tqdm
-import re
-import os
+from typing import Dict, List, Tuple, Set
 
-def split_on_ngrams(text, ngrams, padding=0):
+def split_on_ngrams(text: str, ngrams: Set[str], padding: int = 0) -> List[str]:
+    """
+    Split the given text on the specified n-grams.
+
+    Args:
+        text (str): The text to split.
+        ngrams (Set[str]): The n-grams to split the text on.
+        padding (int, optional): The number of characters to remove before and after each n-gram in the split. Defaults to 0.
+
+    Returns:
+        List[str]: The text splits.
+    """
+
     # Find all ngram occurrences and their positions
     ngram_positions = []
     for ngram in ngrams:
@@ -45,7 +55,18 @@ def split_on_ngrams(text, ngrams, padding=0):
 
     return splits
 
-def split_on_contamination(data_batch, test_ngrams, args):
+def split_on_contamination(data_batch: Dict[str, List[str]], test_ngrams: Set[str], args: argparse.Namespace) -> Dict[str, List[str]]:
+    """
+    Split the data in the batch on the specified n-grams.
+
+    Args:
+        data_batch (Dict[str, List[str]]): The data batch to split.
+        test_ngrams (Set[str]): The n-grams to split the data on.
+        args (argparse.Namespace): The command-line arguments.
+
+    Returns:
+        Dict[str, List[str]]: The split data batch.
+    """
     # Data batch comes as a dict with list values. Let's reorganize it as a list of dicts
     # data_batch = [{k: v[i] for k, v in data_batch.items()} for i in range(len(data_batch[args.column]))]
     # Compute 13-grams for the batch

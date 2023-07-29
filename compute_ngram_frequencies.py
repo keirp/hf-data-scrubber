@@ -4,8 +4,21 @@ from nltk.util import ngrams
 import jsonlines
 from tqdm import tqdm 
 import json
+from typing import Dict, Set, Any
 
-def get_ngram_frequency(data, test_ngrams, args): 
+def get_ngram_frequency(data: Dict[str, Any], test_ngrams: Set[str], args: argparse.Namespace) -> Dict[str, str]: 
+    """
+    Compute the n-gram frequencies for a given data point.
+
+    Args:
+        data (Dict[str, Any]): The data point.
+        test_ngrams (Set[str]): The n-grams to compute the frequencies for.
+        args (argparse.Namespace): The command-line arguments.
+
+    Returns:
+        Dict[str, str]: The n-gram frequencies for the data point.
+    """
+
     # For one datapoint, we want to compute the ngrams that occur in the text and output
     # A dict with the ngram as key and the frequency as value
 
@@ -47,6 +60,9 @@ def main(args):
     # Format it like {'ngram': _, 'frequency': _}
     ngram_frequency = [{'ngram': ngram, 'frequency': ngram_frequency[ngram]} for ngram in ngram_frequency]
 
+    # Sort it by frequency (low to high)
+    ngram_frequency = sorted(ngram_frequency, key=lambda x: x['frequency'])
+    
     # Save it
     with jsonlines.open(args.output, 'w') as writer:
         writer.write_all(ngram_frequency)
