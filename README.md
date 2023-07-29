@@ -41,17 +41,36 @@ This repository follows the methodology of the GPT-3 paper found [here in Append
 To compute the test set ngrams, run:
 
 ```bash
-python create_test_ngrams.py --test_set <path to test set> --n <ngram size> --output <path to output file>
+python create_test_ngrams.py \
+--test_set <path to test set> \
+--n <ngram size> \
+--output <path to output file>
 ```
 
 To compute the ngram frequencies, run:
 
 ```bash
-python compute_ngram_frequencies.py --dataset <huggingface dataset name> --column <column to decontaminate> --test_ngrams <path to test ngrams> --n <ngram size> --n_processes <number of processes to use> --output <path to output file>
+python compute_ngram_frequencies.py \
+--dataset <huggingface dataset name> \
+--column <column to decontaminate> \
+--test_ngrams <path to test ngrams> \
+--n <ngram size> \
+--n_processes <number of processes to use> \
+--output <path to output file>
 ```
 
 Finally, to decontaminate the dataset, run:
 
 ```bash
-python decontaminate.py --dataset <huggingface dataset name> --column <column to decontaminate> --test_ngrams <path to ngram frequencies> --n <ngram size> --ngram_frequency_threshold <ngram frequency threshold> --max_splits <max splits> --split_padding <split padding> --n_processes <number of processes to use> --push_to_hub <name for huggingface hub> --save_to_disk <path to save decontaminated dataset>
+python decontaminate.py \
+--dataset <huggingface dataset name> \
+--column <column to decontaminate> \
+--test_ngrams <path to ngram frequencies> \
+--n <ngram size> \
+--ngram_frequency_threshold <ngram frequency threshold> \
+--max_splits <max splits> \
+--split_padding <split padding> \
+--n_processes <number of processes to use> \
+--push_to_hub <name for huggingface hub> \
+--save_to_disk <path to save decontaminated dataset>
 ```
