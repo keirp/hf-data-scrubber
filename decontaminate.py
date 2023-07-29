@@ -67,8 +67,6 @@ def split_on_contamination(data_batch: Dict[str, List[str]], test_ngrams: Set[st
     Returns:
         Dict[str, List[str]]: The split data batch.
     """
-    # Data batch comes as a dict with list values. Let's reorganize it as a list of dicts
-    # data_batch = [{k: v[i] for k, v in data_batch.items()} for i in range(len(data_batch[args.column]))]
     # Compute 13-grams for the batch
     ngrams_batch = []
     for txt in data_batch[args.column]:

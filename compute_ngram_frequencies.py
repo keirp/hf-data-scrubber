@@ -57,7 +57,6 @@ def main(args):
         for ngram in obj_ngram_freqs:
             ngram_frequency[ngram] += obj_ngram_freqs[ngram]
 
-    # Format it like {'ngram': _, 'frequency': _}
     ngram_frequency = [{'ngram': ngram, 'frequency': ngram_frequency[ngram]} for ngram in ngram_frequency]
 
     # Sort it by frequency (low to high)
